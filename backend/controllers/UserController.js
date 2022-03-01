@@ -8,16 +8,26 @@ const jwt = require('jsonwebtoken')
 const createUserToken = require('../helpers/create-user-token')
 const getToken = require('../helpers/getToken')
 const getUserByToken = require('../helpers/getUserByToken')
+const { default: mongoose } = require('mongoose')
+const { schema } = require('../models/user')
 
 
 
 module.exports = class UserController {
     static async register(req, res) {
-        const { name, email, phone, password, confirmPassword } = req.body
 
-        if (!name || !email || !phone || !password || !confirmPassword) {
-            res.status(422).json({ message: 'Campo Obrigatório' })
-            return
+        const { name, email, phone, password, confirmPassword } = req.body
+        let itensForm = [name, email, phone, password, confirmPassword]
+        let itensText = ['Nome','e-mail','Fone','Senha','Confirmação de senha']
+        let count = 0
+
+        for (let item of itensForm) {
+            count += 1
+            if (item == null) {
+                res.status(422).json({ message: 'Campo obrigatório!', indice: itensText[count-1] })
+                count = 0
+                return
+            }
         }
 
         if (password !== confirmPassword) {
@@ -127,9 +137,9 @@ module.exports = class UserController {
             return
         }
 
-        const userExists = await User.findOne({email: email})
+        const userExists = await User.findOne({ email: email })
 
-        if (user.email !== email && userExists){
+        if (user.email !== email && userExists) {
             res.status(422).json({
                 message: 'Já existe um usuário cadastrado com este e-mail!'
             })
