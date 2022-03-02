@@ -1,30 +1,22 @@
 const User = require('../models/user')
-
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-
 
 //helpers
 const createUserToken = require('../helpers/create-user-token')
 const getToken = require('../helpers/getToken')
 const getUserByToken = require('../helpers/getUserByToken')
-const { default: mongoose } = require('mongoose')
-const { schema } = require('../models/user')
-
-
 
 module.exports = class UserController {
     static async register(req, res) {
-
         const { name, email, phone, password, confirmPassword } = req.body
         let itensForm = [name, email, phone, password, confirmPassword]
-        let itensText = ['Nome','e-mail','Fone','Senha','Confirmação de senha']
+        let itensText = ['Nome', 'e-mail', 'Fone', 'Senha', 'Confirmação de senha']
         let count = 0
-
         for (let item of itensForm) {
             count += 1
             if (item == null) {
-                res.status(422).json({ message: 'Campo obrigatório!', indice: itensText[count-1] })
+                res.status(422).json({ message: 'Campo obrigatório!', indice: itensText[count - 1] })
                 count = 0
                 return
             }
@@ -34,16 +26,14 @@ module.exports = class UserController {
             res.status(422).json({ message: 'A confirmação de senha não corresponde com a senha!' })
             return
         }
-
         // check if user exists
         const userExists = await User.findOne({ email: email })
-
         if (userExists) {
             res.status(422).json({ message: 'Já existe um usuário cadastrado com esse e-mail!' })
             return
         }
 
-        //create a password
+        //create a passwordHash
         const salt = await bcrypt.genSalt(12)
         const passwordHash = await bcrypt.hash(password, salt)
 
@@ -57,13 +47,9 @@ module.exports = class UserController {
 
         try {
             const newUser = await user.save()
-            //res.status(201).json({ message: "Usuário criado com sucesso!", newUser})
+            res.status(201).json({ message: "Usuário criado com sucesso!", newUser })
             await createUserToken(newUser, req, res)
-
-        } catch (error) {
-            res.status(500).json({ message: error })
-            console.log(error)
-        }
+        } catch (error) { res.status(500).json({ message: error }) }
     }
 
     static async login(req, res) {
@@ -125,26 +111,58 @@ module.exports = class UserController {
     }
 
     static async editUser(req, res) {
-        const id = req.params.id
         const token = getToken(req)
         const user = await getUserByToken(token)
+
         const { name, email, phone, password, confirmPassword } = req.body
-        let image = ''
-        //validations
 
-        if (!name || !email || !phone || !password || !confirmPassword) {
-            res.status(422).json({ message: 'Campo Obrigatório' })
-            return
-        }
-
-        const userExists = await User.findOne({ email: email })
-
-        if (user.email !== email && userExists) {
-            res.status(422).json({
-                message: 'Já existe um usuário cadastrado com este e-mail!'
-            })
-            return
-        }
+        user.name = name
         user.email = email
+        user.phone = phone
+
+        let itensForm = [name, email, phone, password, confirmPassword]
+        let itensText = ['Nome', 'e-mail', 'Fone', 'Senha', 'Confirmação de senha']
+        let count = 0
+        for (let item of itensForm) {
+            count += 1
+            if (item == null) {
+                res.status(422).json({ message: 'Campo obrigatório!', indice: itensText[count - 1] })
+                count = 0
+                return
+            }
+        }
+
+        // check if user exists
+        const userExists = await User.findOne({ email: email })
+        if (user.email !== email && userExists) {
+            res.status(422).json({ message: 'Por favor, utilize outro e-mail!' })
+            return
+        }
+
+        // check if password match
+        if (password != confirmPassword) {
+            res.status(422).json({ message: 'As senhas não conferem.' })
+            return
+        }
+        // creating password
+        const salt = await bcrypt.genSalt(12)
+        //const reqPassword = req.body.password
+        const passwordHash = await bcrypt.hash(password, salt)
+        user.password = passwordHash
+
+        try {
+            // returns updated data
+            const updatedUser = await User.findOneAndUpdate(
+                { _id: user._id },
+                { $set: user },
+                { new: true },
+            )
+            res.json({
+                message: 'Usuário atualizado com sucesso!',
+                data: updatedUser,
+            })
+        } catch (error) {
+            res.status(500).json({ message: error })
+        }
     }
-}
+}    
