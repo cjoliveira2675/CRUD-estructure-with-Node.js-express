@@ -1,0 +1,39 @@
+.form_container {
+    max-width: 300px;
+    margin: 0 auto;
+    border-radius: 15px;
+}
+
+.form_container h1, 
+.form_container input[type='submit'] {
+    text-align: center;
+}
+
+.form_container input[type='submit'] {
+    border-radius: 5px;
+    color: #b19cd9;
+    border: none;
+    min-width: 100px;
+    min-height: 2.5em;
+    width: 60%;
+    margin-left: 20%;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+    background-color: #993399;
+    box-shadow: 0 0 15px #000;
+    justify-self: center;
+}
+.form_container input[type='submit']:active {
+    transform: scale(.95);
+    box-shadow: 0 0 5px #000;
+    transition: .3s;
+}
+.form_container p {
+    margin-top: 15px;
+    background-color: plum;
+}
+.form_container p a {
+    color: #16479d;
+    font-weight: bold;
+}

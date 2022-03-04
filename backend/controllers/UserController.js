@@ -15,8 +15,9 @@ module.exports = class UserController {
         let count = 0
         for (let item of itensForm) {
             count += 1
+            let indice = 'Campo obrigatório!'+itensText[count - 1]
             if (item == null) {
-                res.status(422).json({ message: 'Campo obrigatório!', indice: itensText[count - 1] })
+                res.status(422).json({message: indice})
                 count = 0
                 return
             }
@@ -47,8 +48,7 @@ module.exports = class UserController {
 
         try {
             const newUser = await user.save()
-            res.status(201).json({ message: "Usuário criado com sucesso!", newUser })
-            await createUserToken(newUser, req, res)
+            await createUserToken(newUser, req, res)            
         } catch (error) { res.status(500).json({ message: error }) }
     }
 
