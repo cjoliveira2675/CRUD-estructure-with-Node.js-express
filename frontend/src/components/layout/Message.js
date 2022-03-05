@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import bus from '../../utils/bus'
 import styles from './Message.module.css'
-import useFlashMessage from '../../hooks/useFlashMessage'
 
 function Message() {
     const [visibility, setVisibility] = useState(false)

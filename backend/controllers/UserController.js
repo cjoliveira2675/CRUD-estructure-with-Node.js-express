@@ -120,8 +120,8 @@ module.exports = class UserController {
         user.email = email
         user.phone = phone
 
-        let itensForm = [name, email, phone, password, confirmPassword]
-        let itensText = ['Nome', 'e-mail', 'Fone', 'Senha', 'Confirmação de senha']
+        let itensForm = [name, email, phone]
+        let itensText = ['Nome', 'e-mail', 'Fone']
         let count = 0
         for (let item of itensForm) {
             count += 1
@@ -143,12 +143,13 @@ module.exports = class UserController {
         if (password != confirmPassword) {
             res.status(422).json({ message: 'As senhas não conferem.' })
             return
-        }
+        } else if (password == confirmPassword && password != null) {
         // creating password
         const salt = await bcrypt.genSalt(12)
         //const reqPassword = req.body.password
         const passwordHash = await bcrypt.hash(password, salt)
         user.password = passwordHash
+        }
 
         try {
             // returns updated data

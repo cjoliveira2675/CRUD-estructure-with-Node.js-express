@@ -6,10 +6,10 @@ import Footer from './components/layout/Footer';
 import Container from './components/layout/Container';
 import Message from './components/layout/Message'
 
-
 import Home from './components/pages/Home';
 import Login from './components/pages/Auth/Login';
 import Register from './components/pages/Auth/register';
+import Profile from './components/pages/User/Profile';
 
 import { UserProvider } from './context/UserContext';
 
@@ -24,6 +24,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/user/profile" element={<Profile />} />
             <Route path='*' element={<h1>Not Found</h1>} />
           </Routes>
         </Container>

@@ -6,6 +6,17 @@ import useFlashMessage from './useFlashMessage'
 
 export default function useAuth() {
     const { setFlashMessage } = useFlashMessage()
+    const [authenticated, setAuthenticated] = useState(false)
+    const navigate = useNavigate()
+    //const ctrl = 20000;
+
+    useEffect(() => {
+        const token = sessionStorage.getItem('token')
+        if (token) {
+            api.defaults.headers.Authorization = `Bearer ${JSON.parse(token)}`
+            setAuthenticated(true)
+        }
+    }, [])
 
     async function register(user) {
 
@@ -18,6 +29,7 @@ export default function useAuth() {
                 msgType = 'success'
                 return response.data
             })
+            await authUser(data)
         } catch (error) {
             msgText = error.response.data.message
             msgType = 'error'
@@ -25,11 +37,78 @@ export default function useAuth() {
 
         setFlashMessage(msgText, msgType)
 
-        if (msgType == 'success') {
+        if (msgType === 'success') {
             setTimeout(() => {
-                window.location.reload()
-            }, 3050);
+                navigate('/')
+            }, 750);
         }
     }
-    return { register }
+
+    async function login(user) {
+        let msgText = 'Logado com sucesso!'
+        let msgType = 'success'
+
+        try {
+            const data = await api.post('/users/login', user).then((response) => {
+                return response.data
+            })
+
+            await authUser(data)
+        } catch (error) {
+            msgText = error.response.data.message
+            msgType = 'error'
+        }
+        if (msgType === 'success') {
+            setTimeout(() => {
+                navigate('/')
+            }, 50);
+        }
+        setFlashMessage(msgText, msgType)
+    }
+
+    async function authUser(data) {
+
+        setAuthenticated(true)
+        sessionStorage.setItem('token', JSON.stringify(data.token))
+    }
+
+    function logout() {
+        let msgText = 'Logout realizado com sucesso!'
+        let msgType = 'success'
+
+        setAuthenticated(false)
+        sessionStorage.removeItem('token')
+        api.defaults.headers.Authorization = undefined
+        navigate('/')
+
+        setFlashMessage(msgText, msgType)
+
+    }
+
+    async function updateUser(user) {
+        let msgText = ''
+        let msgType = ''
+
+        try {
+            await api.patch('/users/edit/:id', user).then((response) => {
+                msgText = 'Cadastro atualizado com sucesso!'
+                msgType = 'success'
+                return response.data
+            })
+            //await authUser(data)
+        } catch (error) {
+            msgText = error.response.data.message
+            msgType = 'error'
+        }
+
+        setFlashMessage(msgText, msgType)
+
+        if (msgType === 'success') {
+            setTimeout(() => {
+                window.location.reload()
+            }, 750);
+        }
+    }
+
+    return { authenticated, register, logout, login, updateUser }
 }
